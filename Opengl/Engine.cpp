@@ -58,53 +58,9 @@ bool Engine::CreateWindow(short width, short height, std::string title,  bool Ca
     Default_Tex_Shader = Shader("shaders/default.vert", "shaders/texture.frag");
     Default_Shader = Shader("shaders/default.vert", "shaders/default.frag");
     SetBlend(true);
-    //v = vertices.data();
     return true;
 }
 
-//Sprite* Engine::CreateSprite(std::string filePath, glm::vec2 Pos, glm::vec2 size)
-//{
-//    Sprite* sprite  =  new Sprite(filePath);
-//    Cleanup.push_back(sprite);
-//    v = GenQuad(v, Pos.x, Pos.y, size);
-//    indexcount += 6;
-//    return sprite;
-//}
-//
-//Vertex* Engine::GenQuad(Vertex* v, int x, int y, glm::vec2 size)
-//{
-//    //bottom left
-//    v->Pos.x = x;
-//    v->Pos.y = y;
-//    v->Pos.z = 0.0f;
-//    v->TexCoord.x = 0.0f;
-//    v->TexCoord.y = 0.0f;
-//    v++;
-//
-//    //top left
-//    v->Pos.x = x;
-//    v->Pos.y = y + size.y;
-//    v->Pos.z = 0.0f;
-//    v->TexCoord.x = 0.0f;
-//    v->TexCoord.y = 1.0f;
-//    v++;
-//
-//    //top right
-//    v->Pos.x = x + size.x;
-//    v->Pos.y = y + size.y;
-//    v->Pos.z = 0.0f;
-//    v->TexCoord.x = 1.0f;
-//    v->TexCoord.y = 1.0f;
-//    v++;
-//    //bottom right
-//    v->Pos.x = x +size.x;
-//    v->Pos.y = y;
-//    v->Pos.z = 0.0f;
-//    v->TexCoord.x = 1.0f;
-//    v->TexCoord.y = 0.0f;
-//    v++;
-//    return v;
-//}
 
 bool Engine::Init()
 {
@@ -189,8 +145,6 @@ void Engine::CreateAssets()
 
 Engine::~Engine()
 {
-    /*for (auto& s : Cleanup)
-        delete s;*/
     glDeleteVertexArrays(1, &vao);
     glDeleteBuffers(1, &vbo);
     glDeleteBuffers(1, &ebo);
@@ -259,7 +213,7 @@ void Engine::Run()
         GLCALL(glfwPollEvents());
     }
 }
-void Engine::DrawSprite(Sprite& sprite, glm::vec2 Pos, glm::vec2 Size, glm::vec2 axis, float angle, glm::vec4 tint)
+void Engine::DrawSprite(Sprite& sprite, glm::vec2 Pos, glm::vec2 Size, float angle, glm::vec4 tint)
 {
     glm::mat4 view = glm::ortho(0.0f, (float)Src_width, 0.0f, (float)Src_height, -1.0f, 100.0f);
 
@@ -267,7 +221,7 @@ void Engine::DrawSprite(Sprite& sprite, glm::vec2 Pos, glm::vec2 Size, glm::vec2
     float sizeY = Size.y / 100;
 
     glm::mat4 model = glm::scale(glm::mat4(1.0f), glm::vec3(sizeX,sizeY, 1.0f));
-    model = glm::rotate(model, glm::radians(angle), glm::vec3(axis.x, axis.y, 0.0f));
+    model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0, 0.0f, 0.0f));
     model = glm::translate(model, glm::vec3(Pos.x, Pos.y, 0.0f));
 
     Default_Tex_Shader.Activate();
@@ -287,7 +241,7 @@ void Engine::DrawSprite(Sprite& sprite, glm::vec2 Pos, glm::vec2 Size, glm::vec2
 
 }
 
-void Engine::DrawRect(glm::vec2 Pos, glm::vec2 Size, glm::vec2 axis, float angle,glm::vec4 Color)
+void Engine::DrawRect(glm::vec2 Pos, glm::vec2 Size, float angle,glm::vec4 Color)
 {
     glm::mat4 view = glm::ortho(0.0f, (float)Src_width, 0.0f, (float)Src_height, -1.0f, 100.0f);
 
@@ -295,7 +249,7 @@ void Engine::DrawRect(glm::vec2 Pos, glm::vec2 Size, glm::vec2 axis, float angle
     float sizeY = Size.y / 100;
 
     glm::mat4 model = glm::scale(glm::mat4(1.0f), glm::vec3(sizeX, sizeY, 1.0f));
-    model = glm::rotate(model, glm::radians(angle), glm::vec3(axis.x, axis.y, 0.0f));
+    model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0, 0.0f, 0.0f));
     model = glm::translate(model, glm::vec3(Pos.x, Pos.y, 0.0f));
 
     Default_Shader.Activate();
@@ -307,4 +261,108 @@ void Engine::DrawRect(glm::vec2 Pos, glm::vec2 Size, glm::vec2 axis, float angle
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     Default_Shader.Deactivate();
 
+}
+void Engine::DrawCircle(glm::vec2 Center, float radius, glm::vec4 Color)
+{
+    int incrementAngle = 10.0f;
+    const int triangleCount = 360 / incrementAngle;
+
+    std::vector<GLfloat> vertices(triangleCount * 3);
+    float angle = 0.0f;
+    vertices[0] = Center.x;
+    vertices[1] = Center.y;
+    vertices[2] = Center.x + cos(glm::radians(angle)) * radius;
+    vertices[3] = Center.y + sin(glm::radians(angle)) * radius;
+
+    for (int i = 4; i < triangleCount *3; i +=2)
+    {
+        angle += incrementAngle;
+        vertices[i + 0] = Center.x + cos(glm::radians(angle)) * radius;
+        vertices[i + 1] = Center.y + sin(glm::radians(angle)) * radius;
+    }
+    
+    std::vector<uint32_t> indices((triangleCount + 1) * 3);
+    int offset = 0;
+
+    for (int j = 0; j < (triangleCount + 1) * 3; j += 3)
+    {
+        indices[j + 0] = 0;
+        indices[j + 1] = 1 + offset;
+        indices[j + 2] = 2 + offset;
+        offset++;
+    }
+
+    GLuint cvbo , cebo;
+    glGenBuffers(1, &cvbo);
+    glBindBuffer(GL_ARRAY_BUFFER, cvbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GL_FLOAT) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GL_FLOAT), 0);
+    glEnableVertexAttribArray(0);
+
+    glGenBuffers(1, &cebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * indices.size(), &indices[0], GL_STATIC_DRAW);
+
+    glm::mat4 view = glm::ortho(0.0f, (float)Src_width, 0.0f, (float)Src_height, -1.0f, 100.0f);
+    glm::mat4 model(1.0f);
+
+
+    Default_Shader.Activate();
+    Default_Shader.SetUniformMat4("view", view);
+    Default_Shader.SetUniformMat4("model", model);
+    Default_Shader.SetUniform4f("Color", Color.r, Color.g, Color.b, Color.a);
+    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+    Default_Shader.Deactivate();
+}
+
+void Engine::SetPixel(int x, int y, glm::vec4 Color)
+{
+    GLfloat points[] = { x,y };
+    uint32_t pvbo;
+    glGenBuffers(1, &pvbo);
+    glBindBuffer(GL_ARRAY_BUFFER, pvbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), 0);
+
+    glm::mat4 view = glm::ortho(0.0f, (float)Src_width, 0.0f, (float)Src_height, -1.0f, 100.0f);
+    glm::mat4 model(1.0f);
+
+
+    Default_Shader.Activate();
+    Default_Shader.SetUniformMat4("view", view);
+    Default_Shader.SetUniformMat4("model", model);
+    Default_Shader.SetUniform4f("Color", Color.r, Color.g, Color.b, Color.a);
+    glDrawArrays(GL_POINTS, 0, 1);
+    Default_Shader.Deactivate();
+};
+
+void Engine::DrawLine(glm::vec2 Pos, float length, float angle, glm::vec4 Color)
+{
+    float x = Pos.x + cos(glm::radians(angle)) * length;
+    float y = Pos.y + sin(glm::radians(angle)) * length;
+    GLfloat vertices[] = {
+     Pos.x , Pos.y  , 0.0f,
+     x ,  y, 0.0f
+    };
+    GLuint lvbo;
+    glGenBuffers(1, &lvbo);
+    glBindBuffer(GL_ARRAY_BUFFER, lvbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GL_FLOAT), 0);
+    glEnableVertexAttribArray(0);
+
+
+    glm::mat4 view = glm::ortho(0.0f, (float)Src_width, 0.0f, (float)Src_height, -1.0f, 100.0f);
+    glm::mat4 model(1.0f);
+
+
+    Default_Shader.Activate();
+    Default_Shader.SetUniformMat4("view", view);
+    Default_Shader.SetUniformMat4("model", model);
+    Default_Shader.SetUniform4f("Color", Color.r, Color.g, Color.b, Color.a);
+    glDrawArrays(GL_LINES, 0, 2);
+    Default_Shader.Deactivate();
 }
