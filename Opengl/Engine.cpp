@@ -38,6 +38,8 @@ bool Engine::CreateWindow(short width, short height, std::string title,  bool Ca
     Src_width = width;
     Src_height = height;
     Title = title;
+    Points = new float[Src_width*Src_height * 6];
+
     glfwInit();
     window = glfwCreateWindow(Src_width, Src_height, Title.c_str(), NULL, NULL);
     if (window == nullptr)
@@ -64,38 +66,104 @@ bool Engine::CreateWindow(short width, short height, std::string title,  bool Ca
 
 bool Engine::Init()
 {
-
+    // ---------------------------------- Quad and Textures---------------------- 
     GLfloat vertices[] = {
         // Positions        // textcoordes 
-    0.0f , 0.0f ,0.0f , 0.0f , 0.0f,
-    0.0f , 100.0f ,0.0f , 0.0f , 1.0f,
-    100.0f , 100.0f ,0.0f , 1.0f , 1.0f,
-    100.0f , 0.0f ,0.0f , 1.0f , 0.0f,
+    0.0f , 0.0f ,0.0f , 0.0f , 1.0f,
+    0.0f , 100.0f ,0.0f , 0.0f , 0.0f,
+    100.0f , 100.0f ,0.0f , 1.0f , 0.0f,
+    100.0f , 0.0f ,0.0f , 1.0f , 1.0f,
     };
     uint32_t indices[] =
     {
         0,1,2,
         2,3,0,
     };
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
-    glGenBuffers(1, &ebo);
+    GLCALL(glGenVertexArrays(1, &vao));
+    GLCALL(glGenBuffers(1, &vbo));
+    GLCALL(glGenBuffers(1, &ebo));
 
-    glBindVertexArray(vao);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    GLCALL(glBindVertexArray(vao));
+    GLCALL(glBindBuffer(GL_ARRAY_BUFFER, vbo));
+    GLCALL(glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW));
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo));
+    GLCALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW));
+    
+    GLCALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GL_FLOAT), (void*)0));
+    GLCALL(glEnableVertexAttribArray(0));
+    GLCALL(glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GL_FLOAT), (void*)(3 * sizeof(GL_FLOAT))));
+    GLCALL(glEnableVertexAttribArray(1));
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GL_FLOAT), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GL_FLOAT), (void*)(3 * sizeof(GL_FLOAT)));
-    glEnableVertexAttribArray(1);
+    GLCALL(glBindVertexArray(0));
+    GLCALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
+    GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+    //--------------------------------Quad End ---------------------------
+    //--------------------------------Circle Begin -----------------------
+    int incrementAngle = 10.0f;
+    const int triangleCount = 360 / incrementAngle;
+    glm::vec2 Center(0, 0);
+    float radius = 100;
+    std::vector<GLfloat> cvertices(triangleCount * 3);
+    float angle = 0.0f;
+    cvertices[0] = Center.x;
+    cvertices[1] = Center.y;
+    cvertices[2] = Center.x + cos(glm::radians(angle)) * radius;
+    cvertices[3] = Center.y + sin(glm::radians(angle)) * radius;
 
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    for (int i = 4; i < triangleCount * 3; i += 2)
+    {
+        angle += incrementAngle;
+        cvertices[i + 0] = Center.x + cos(glm::radians(angle)) * radius;
+        cvertices[i + 1] = Center.y + sin(glm::radians(angle)) * radius;
+    }
+
+    std::vector<uint32_t> cindices((triangleCount + 1) * 3);
+    int offset = 0;
+
+    for (int j = 0; j < (triangleCount + 1) * 3; j += 3)
+    {
+        cindices[j + 0] = 0;
+        cindices[j + 1] = 1 + offset;
+        cindices[j + 2] = 2 + offset;
+        offset++;
+    }
+    cindicesSize = cindices.size();
+    GLCALL(glGenVertexArrays(1, &cvao));
+    GLCALL(glGenBuffers(1, &cvbo));
+
+    GLCALL(glBindVertexArray(cvao));
+    GLCALL(glBindBuffer(GL_ARRAY_BUFFER, cvbo));
+    GLCALL(glBufferData(GL_ARRAY_BUFFER, sizeof(GL_FLOAT) * cvertices.size(), &cvertices[0], GL_STATIC_DRAW));
+
+    GLCALL(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GL_FLOAT), 0));
+    GLCALL(glEnableVertexAttribArray(0));
+
+    GLCALL(glGenBuffers(1, &cebo));
+    GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cebo));
+    GLCALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * cindices.size(), &cindices[0], GL_STATIC_DRAW));
+
+    GLCALL(glBindVertexArray(0));
+    GLCALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
+    GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+    //--------------------------------Circle End ---------------------------
+    //-------------------------------Points ---------------------------
+    GLCALL(glGenVertexArrays(1, &pvao));
+    GLCALL(glGenBuffers(1, &pvbo));
+
+    GLCALL(glBindVertexArray(pvao));
+    GLCALL(glBindBuffer(GL_ARRAY_BUFFER, pvbo));
+    GLCALL(glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * Src_width*Src_height*6, nullptr, GL_STATIC_DRAW));
+
+    GLCALL(glEnableVertexAttribArray(0));
+    GLCALL(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), 0));
+    GLCALL(glEnableVertexAttribArray(2));
+    GLCALL(glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(2 * sizeof(GLfloat))));
+
+    GLCALL(glBindVertexArray(0));
+    GLCALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
+
+    //--------------------------------Points End --------------------------
 
     Events();
     CreateAssets();
@@ -115,9 +183,9 @@ void Engine::ClearScreen()
     GLCALL(glClear(GL_COLOR_BUFFER_BIT));
 }
 
-void Engine::BackGroundColor(float r, float g, float b, float a)
+void Engine::BackGroundColor(glm::vec4 Col)
 {
-    GLCALL(glClearColor(r,g,b,a));
+    GLCALL(glClearColor(Col.r, Col.g, Col.b, Col.a));
 }
 
 void Engine::resizeCallback(GLFWwindow* window, int width, int height)
@@ -145,9 +213,18 @@ void Engine::CreateAssets()
 
 Engine::~Engine()
 {
+    delete[] Points;
     glDeleteVertexArrays(1, &vao);
     glDeleteBuffers(1, &vbo);
     glDeleteBuffers(1, &ebo);
+
+    glDeleteVertexArrays(1, &cvao);
+    glDeleteBuffers(1, &cvbo);
+    glDeleteBuffers(1, &cebo);
+
+    glDeleteVertexArrays(1, &pvao);
+    glDeleteBuffers(1, &pvbo);
+
     glfwDestroyWindow(window);
     glDeleteShader(Default_Tex_Shader.ID);
     glDeleteShader(Default_Shader.ID);
@@ -190,7 +267,7 @@ void Engine::Run()
         time += deltaTime;
         if (time >= 1.0f)
         {
-            std::string t = Title + "      FPS : " + std::to_string((int)(frames / time));
+            std::string t = Title+ "     "+std::to_string(Src_width) + 'x' + std::to_string(Src_height) + "-FPS : " + std::to_string((int)(frames / time));
             glfwSetWindowTitle(window,t.c_str());
             frames = 0.0f;
             time = 0.0f;
@@ -208,21 +285,28 @@ void Engine::Run()
         if (!Render())
             glfwSetWindowShouldClose(window, true);
 
-        
+        DrawPixels();
+        arrayPos = 0;
+        no_points = 0;
+        dataSet = 0;
         GLCALL(glfwSwapBuffers(window));
         GLCALL(glfwPollEvents());
     }
 }
 void Engine::DrawSprite(Sprite& sprite, glm::vec2 Pos, glm::vec2 Size, float angle, glm::vec4 tint)
 {
-    glm::mat4 view = glm::ortho(0.0f, (float)Src_width, 0.0f, (float)Src_height, -1.0f, 100.0f);
+    glm::mat4 view = glm::ortho(0.0f, (float)Src_width, (float)Src_height, 0.0f, -1.0f, 100.0f);
 
     float sizeX = Size.x / 100;
     float sizeY = Size.y / 100;
 
     glm::mat4 model = glm::scale(glm::mat4(1.0f), glm::vec3(sizeX,sizeY, 1.0f));
-    model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0, 0.0f, 0.0f));
+    glm::vec2 Center(50.0f, 50.0f);
+
     model = glm::translate(model, glm::vec3(Pos.x, Pos.y, 0.0f));
+    model = glm::translate(model, glm::vec3(Center.x, Center.y, 0.0f));
+    model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::translate(model, glm::vec3(-Center.x, -Center.y, 0.0f));
 
     Default_Tex_Shader.Activate();
     Default_Tex_Shader.SetUniformMat4("view", view);
@@ -235,10 +319,9 @@ void Engine::DrawSprite(Sprite& sprite, glm::vec2 Pos, glm::vec2 Size, float ang
 
     glBindVertexArray(vao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
     sprite.unbind();
     Default_Tex_Shader.Deactivate();
-
-
 }
 
 void Engine::DrawRect(glm::vec2 Pos, glm::vec2 Size, float angle,glm::vec4 Color)
@@ -249,8 +332,13 @@ void Engine::DrawRect(glm::vec2 Pos, glm::vec2 Size, float angle,glm::vec4 Color
     float sizeY = Size.y / 100;
 
     glm::mat4 model = glm::scale(glm::mat4(1.0f), glm::vec3(sizeX, sizeY, 1.0f));
-    model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0, 0.0f, 0.0f));
+    glm::vec2 Center(50.0f, 50.0f);
+
     model = glm::translate(model, glm::vec3(Pos.x, Pos.y, 0.0f));
+    model = glm::translate(model, glm::vec3(Center.x, Center.y, 0.0f));
+    model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::translate(model, glm::vec3(-Center.x, -Center.y, 0.0f));
+
 
     Default_Shader.Activate();
     Default_Shader.SetUniformMat4("view", view);
@@ -259,83 +347,64 @@ void Engine::DrawRect(glm::vec2 Pos, glm::vec2 Size, float angle,glm::vec4 Color
 
     glBindVertexArray(vao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
     Default_Shader.Deactivate();
 
 }
 void Engine::DrawCircle(glm::vec2 Center, float radius, glm::vec4 Color)
 {
-    int incrementAngle = 10.0f;
-    const int triangleCount = 360 / incrementAngle;
-
-    std::vector<GLfloat> vertices(triangleCount * 3);
-    float angle = 0.0f;
-    vertices[0] = Center.x;
-    vertices[1] = Center.y;
-    vertices[2] = Center.x + cos(glm::radians(angle)) * radius;
-    vertices[3] = Center.y + sin(glm::radians(angle)) * radius;
-
-    for (int i = 4; i < triangleCount *3; i +=2)
-    {
-        angle += incrementAngle;
-        vertices[i + 0] = Center.x + cos(glm::radians(angle)) * radius;
-        vertices[i + 1] = Center.y + sin(glm::radians(angle)) * radius;
-    }
     
-    std::vector<uint32_t> indices((triangleCount + 1) * 3);
-    int offset = 0;
-
-    for (int j = 0; j < (triangleCount + 1) * 3; j += 3)
-    {
-        indices[j + 0] = 0;
-        indices[j + 1] = 1 + offset;
-        indices[j + 2] = 2 + offset;
-        offset++;
-    }
-
-    GLuint cvbo , cebo;
-    glGenBuffers(1, &cvbo);
-    glBindBuffer(GL_ARRAY_BUFFER, cvbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GL_FLOAT) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GL_FLOAT), 0);
-    glEnableVertexAttribArray(0);
-
-    glGenBuffers(1, &cebo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * indices.size(), &indices[0], GL_STATIC_DRAW);
-
-    glm::mat4 view = glm::ortho(0.0f, (float)Src_width, 0.0f, (float)Src_height, -1.0f, 100.0f);
+    glm::mat4 view = glm::ortho(0.0f, (float)Src_width, (float)Src_height, 0.0f, -1.0f, 100.0f);
+    
     glm::mat4 model(1.0f);
-
+    float scale = radius / 100;
+    model = glm::scale(model, glm::vec3(scale, scale, 1.0f));
+    model = glm::translate(model, glm::vec3(Center.x, Center.y, 0.0f));
 
     Default_Shader.Activate();
     Default_Shader.SetUniformMat4("view", view);
     Default_Shader.SetUniformMat4("model", model);
     Default_Shader.SetUniform4f("Color", Color.r, Color.g, Color.b, Color.a);
-    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+    glBindVertexArray(cvao);
+    glDrawElements(GL_TRIANGLES, cindicesSize, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
     Default_Shader.Deactivate();
 }
 
+void Engine::DrawPixels()
+{
+    if (no_points == 0){  }
+    else
+    {
+        if (dataSend != dataSet)
+        {
+        glBindBuffer(GL_ARRAY_BUFFER, pvbo);
+        glBufferSubData(GL_ARRAY_BUFFER, 0,sizeof(GLfloat) * Src_width * Src_height * 6, Points);
+        dataSend = dataSet;
+        }
+        glm::mat4 view = glm::ortho(0.0f, (float)Src_width, (float)Src_height, 0.0f, -1.0f, 100.0f);
+        glm::mat4 model(1.0f);
+        Default_Shader.Activate();
+        Default_Shader.SetUniformMat4("view", view);
+        Default_Shader.SetUniformMat4("model", model);
+        glBindVertexArray(pvao);
+        glDrawArrays(GL_POINTS, 0, no_points);
+        Default_Shader.Deactivate();
+        glBindVertexArray(0);
+    }
+    
+};
 void Engine::SetPixel(int x, int y, glm::vec4 Color)
 {
-    GLfloat points[] = { x,y };
-    uint32_t pvbo;
-    glGenBuffers(1, &pvbo);
-    glBindBuffer(GL_ARRAY_BUFFER, pvbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), 0);
-
-    glm::mat4 view = glm::ortho(0.0f, (float)Src_width, 0.0f, (float)Src_height, -1.0f, 100.0f);
-    glm::mat4 model(1.0f);
-
-
-    Default_Shader.Activate();
-    Default_Shader.SetUniformMat4("view", view);
-    Default_Shader.SetUniformMat4("model", model);
-    Default_Shader.SetUniform4f("Color", Color.r, Color.g, Color.b, Color.a);
-    glDrawArrays(GL_POINTS, 0, 1);
-    Default_Shader.Deactivate();
+    Points[arrayPos + 0] = x;
+    Points[arrayPos + 1] = y;
+    Points[arrayPos + 2] = Color.r;
+    Points[arrayPos + 3] = Color.g;
+    Points[arrayPos + 4] = Color.b;
+    Points[arrayPos + 5] = Color.a;
+    arrayPos += 6;
+    no_points += 1;
+    dataSet += 1;
 };
 
 void Engine::DrawLine(glm::vec2 Pos, float length, float angle, glm::vec4 Color)
@@ -354,7 +423,6 @@ void Engine::DrawLine(glm::vec2 Pos, float length, float angle, glm::vec4 Color)
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GL_FLOAT), 0);
     glEnableVertexAttribArray(0);
 
-
     glm::mat4 view = glm::ortho(0.0f, (float)Src_width, 0.0f, (float)Src_height, -1.0f, 100.0f);
     glm::mat4 model(1.0f);
 
@@ -363,6 +431,10 @@ void Engine::DrawLine(glm::vec2 Pos, float length, float angle, glm::vec4 Color)
     Default_Shader.SetUniformMat4("view", view);
     Default_Shader.SetUniformMat4("model", model);
     Default_Shader.SetUniform4f("Color", Color.r, Color.g, Color.b, Color.a);
+
     glDrawArrays(GL_LINES, 0, 2);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
     Default_Shader.Deactivate();
 }

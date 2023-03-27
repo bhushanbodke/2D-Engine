@@ -29,7 +29,10 @@ public:
     Sprite tree5;
     
     glm::vec4 c = Color::Red;
+    glm::vec2 a = glm::vec2(100.0f, 100.0f);
     float angle = 0.0f;
+    int Speed = 5.0f;
+
   
     Game() {
         
@@ -46,20 +49,28 @@ public:
     {
         if (KeyBoard::key(GLFW_KEY_W))
         {
-            angle += 3.5f * dt;
+            a.y += 10 *dt ;
         }
         if (KeyBoard::key(GLFW_KEY_S))
         {
-            angle -= 3.5f * dt;
+            a.y -= 10 * dt ;
+
+        }
+        if (Mouse::button(GLFW_MOUSE_BUTTON_1))
+        {
+            std::cout << Mouse::GetMouseX() << "||" << Mouse::GetMouseY()<<std::endl;
         }
     }
     bool Render() override
     {
-        BackGroundColor(0.7f, 0.2f, 0.5f, 1.0f);
-        DrawSprite(tree, { 0.0f,0.0f }, { 200.0f,200.0f },0);
-        DrawRect({ 100.0f,100.0f }, { 200.0f,200.0f },0, Color::White);
-        DrawLine({ 200.0f,200.0f }, 500.0f, angle, { 1.0f,1.0f,1.0f,1.0f });
-        SetPixel(500, 500, Color::White);
+        BackGroundColor(Color::Black);
+        for (int i = 0; i < 960; i++)
+        {
+            for (int j = 0; j < 600; j++)
+            {
+                SetPixel(i ,j , Color::Red);
+            }
+        }
         return true;
     }
 

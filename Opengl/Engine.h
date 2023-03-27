@@ -54,11 +54,18 @@ public:
 	short Src_width;
 	short Src_height;
 	GLuint vbo, vao, ebo;
+	GLuint cvbo, cebo, cvao;
+	uint32_t pvao, pvbo;
+	int cindicesSize;
+	int no_points= 0 ;
 	//deafult Shader
 	static Shader Default_Tex_Shader;
 	static Shader Default_Shader;
 
-	int indexcount = 0;
+	int arrayPos = 0; 
+	float * Points;
+	int dataSend = 0;
+	int dataSet = 0;
 
 public:
 	~Engine();
@@ -67,7 +74,7 @@ public:
 	bool SetBlend(bool blend);
 	void Events();
 	void ClearScreen();
-	void BackGroundColor(float r , float g , float b , float a);
+	void BackGroundColor(glm::vec4 Col);
 
 	static void resizeCallback(GLFWwindow* window, int width, int height);
 
@@ -86,6 +93,7 @@ public:
 	void DrawSprite(Sprite& sprite, glm::vec2 Pos, glm::vec2 Size, float angle = 0 , glm::vec4 tint = glm::vec4(1.0f));
 	void DrawRect(glm::vec2 Pos, glm::vec2 Size, float angle = 0, glm::vec4 Color = glm::vec4(1.0f));
 	void SetPixel(int x, int y, glm::vec4 Color = glm::vec4(1.0f));
+	void DrawPixels();
 	void DrawLine(glm::vec2 Pos, float length, float angle, glm::vec4 Color = glm::vec4(1.0f));
 	void DrawCircle(glm::vec2 Center, float radius, glm::vec4 Color = glm::vec4(1.0f));
 };
