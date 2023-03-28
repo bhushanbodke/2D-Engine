@@ -1,3 +1,4 @@
+#include "io/Mouse.h"
 #include<iostream>
 #include "glad.h"
 #include <GLFW/glfw3.h>
@@ -13,8 +14,6 @@
 #include <Imgui/imgui.h>
 #include "Engine.h"
 #include "io/KeyBoard.h"
-#include "io/Mouse.h"
-
 
 
 
@@ -22,17 +21,8 @@ class Game :public Engine
 {
 public:
     Sprite tree;
-    Sprite tree1;
-    Sprite tree2;
-    Sprite tree3;
-    Sprite tree4;
-    Sprite tree5;
-    
-    glm::vec4 c = Color::Red;
-    glm::vec2 a = glm::vec2(100.0f, 100.0f);
-    float angle = 0.0f;
-    int Speed = 5.0f;
-
+    std::vector<glm::vec2> Points;
+    int index = 0;
   
     Game() {
         
@@ -44,33 +34,38 @@ public:
     void CreateAssets() override
     {
         tree = Sprite("tree.png");
+        Points.resize(1000);
     }
     void InputHandling(float dt) override
     {
-        if (KeyBoard::key(GLFW_KEY_W))
-        {
-            a.y += 10 *dt ;
-        }
-        if (KeyBoard::key(GLFW_KEY_S))
-        {
-            a.y -= 10 * dt ;
-
-        }
         if (Mouse::button(GLFW_MOUSE_BUTTON_1))
         {
-            std::cout << Mouse::GetMouseX() << "||" << Mouse::GetMouseY()<<std::endl;
-        }
-    }
-    bool Render() override
-    {
-        BackGroundColor(Color::Black);
-        for (int i = 0; i < 960; i++)
-        {
-            for (int j = 0; j < 600; j++)
+            int x = Mouse::GetMouseX();
+            int y = Mouse::GetMouseY();
+            if (Mouse::GetDX != 0 && Mouse::GetDY() != 0)
             {
-                SetPixel(i ,j , Color::Red);
+                Points[index] = glm::vec2(x, y);
+                index++;
             }
         }
+    }
+    bool Render(int fps) override
+    {
+        BackGroundColor(Color::Navy_Blue);
+        std::cout<<Points.size()<<std::endl;
+        uint16_t x1 = 0;
+        uint16_t y1 = 0;
+        for (auto& point : Points)
+        { 
+            if (x1 == 0)
+                DrawPixel(point.x, point.y, Color::White);
+            else
+                DrawLine( x1, y1, point.x, point.y, Color::White);
+
+            x1 = point.x;
+            y1 = point.y;
+        }
+        //DrawLine(100, 100, 200, 200, Color::Yellow);
         return true;
     }
 
@@ -78,8 +73,9 @@ public:
 
 int main(void)
 {
+    
     Game game;
-    game.CreateWindow(960, 600, "bhusah");
+    game.CreateWindow(960, 600, "bhushan");
     game.Init();
     game.Run();
    

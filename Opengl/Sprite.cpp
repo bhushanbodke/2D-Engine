@@ -1,7 +1,7 @@
 #include "Sprite.h"
 #include "errorhandle.h"
 
-int Sprite::currentID = 0;
+int Sprite::currentID = 1;
 
 Sprite::Sprite(const std::string filepath)
     :m_filepath(filepath), m_height(0),m_width(0), SpriteData(nullptr), slot(currentID++)

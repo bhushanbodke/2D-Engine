@@ -17,6 +17,7 @@
 #include "io/Mouse.h"
 #include <vector>
 #include <array>
+#include <map>
 #include "Sprite.h"
 
 namespace Color {
@@ -46,6 +47,21 @@ namespace Color {
 		Gold(1.0, 0.84, 0.0, 1.0);
 };
 
+struct Character {
+	uint32_t TextureID;
+	glm::ivec2 Size;
+	glm::ivec2 Bearing;
+	uint32_t advance;
+};
+
+enum mode
+{
+	texture = 0 ,
+	solid = 1,
+	text = 2,
+	Point =3,
+};
+
 class Engine
 {
 public:
@@ -53,9 +69,10 @@ public:
 	std::string Title;
 	short Src_width;
 	short Src_height;
-	GLuint vbo, vao, ebo;
-	GLuint cvbo, cebo, cvao;
+	uint32_t vbo, vao, ebo;
+	uint32_t cvbo, cebo, cvao;
 	uint32_t pvao, pvbo;
+	uint32_t tvao, tvbo;
 	int cindicesSize;
 	int no_points= 0 ;
 	//deafult Shader
@@ -67,10 +84,13 @@ public:
 	int dataSend = 0;
 	int dataSet = 0;
 
+	std::map<char, Character> Characters;
+
 public:
 	~Engine();
 	bool CreateWindow(short width, short height, std::string title = "title",bool CapFps60 = false);
 	bool Init();
+	void TextInit();
 	bool SetBlend(bool blend);
 	void Events();
 	void ClearScreen();
@@ -81,7 +101,7 @@ public:
 	//User functions
 
 	virtual bool OnUserCreate();
-	virtual bool Render();
+	virtual bool Render(int fps);
 	virtual void InputHandling(float deltatime);
 	virtual void CreateAssets();
 
@@ -90,11 +110,13 @@ public:
 
 
 	//Draw Functions
-	void DrawSprite(Sprite& sprite, glm::vec2 Pos, glm::vec2 Size, float angle = 0 , glm::vec4 tint = glm::vec4(1.0f));
-	void DrawRect(glm::vec2 Pos, glm::vec2 Size, float angle = 0, glm::vec4 Color = glm::vec4(1.0f));
-	void SetPixel(int x, int y, glm::vec4 Color = glm::vec4(1.0f));
-	void DrawPixels();
-	void DrawLine(glm::vec2 Pos, float length, float angle, glm::vec4 Color = glm::vec4(1.0f));
-	void DrawCircle(glm::vec2 Center, float radius, glm::vec4 Color = glm::vec4(1.0f));
+	void DrawSprite(Sprite& sprite, uint16_t x, uint16_t y, uint16_t width, uint16_t height, glm::vec4 tint = glm::vec4(1.0f), float angle = 0);
+	void DrawRect(uint16_t x, uint16_t y, uint16_t width , uint16_t height, glm::vec4 Color = glm::vec4(1.0f), float angle = 0);
+	void DrawPixel(int x, int y, glm::vec4 Color = glm::vec4(1.0f));
+	void RenderPixels();
+	void DrawLine(uint16_t x, uint16_t y, float length, glm::vec4 Color = glm::vec4(1.0f), float angle = 0 );
+	void DrawLine(uint16_t x, uint16_t y, uint16_t x1, uint16_t y1, glm::vec4 Color);
+	void DrawCircle(uint16_t x, uint16_t y, float radius, glm::vec4 Color = glm::vec4(1.0f));
+	void RenderText(std::string text, float x, float y, float scale, glm::vec4 Color);
 };
 
