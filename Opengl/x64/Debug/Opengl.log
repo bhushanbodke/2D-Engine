@@ -1,35 +1,43 @@
-﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(517,5): warning MSB8028: The intermediate directory (x64\Debug\) contains files shared from another project (Opengl.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+﻿D:\visual studio\ide\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(531,5): warning MSB8028: The intermediate directory (x64\Debug\) contains files shared from another project (Opengl.vcxproj).  This can lead to incorrect clean and rebuild behavior.
   main.cpp
-C:\Users\Bhushan\Desktop\GameEngine\Opengl\main.cpp(43,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\Bhushan\Desktop\GameEngine\Opengl\main.cpp(44,19): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\Bhushan\Desktop\GameEngine\Opengl\main.cpp(61,41): warning C4244: 'argument': conversion from 'T' to 'int', possible loss of data
+D:\Programing\Engine\Opengl\main.cpp(80,54): warning C4244: 'argument': conversion from 'T' to 'uint16_t', possible loss of data
           with
           [
               T=float
           ]
-C:\Users\Bhushan\Desktop\GameEngine\Opengl\main.cpp(61,32): warning C4244: 'argument': conversion from 'T' to 'int', possible loss of data
+D:\Programing\Engine\Opengl\main.cpp(80,40): warning C4244: 'argument': conversion from 'T' to 'uint16_t', possible loss of data
           with
           [
               T=float
           ]
-C:\Users\Bhushan\Desktop\GameEngine\Opengl\main.cpp(63,49): warning C4244: 'argument': conversion from 'T' to 'uint16_t', possible loss of data
+D:\Programing\Engine\Opengl\main.cpp(82,52): warning C4244: 'argument': conversion from 'T' to 'uint16_t', possible loss of data
           with
           [
               T=float
           ]
-C:\Users\Bhushan\Desktop\GameEngine\Opengl\main.cpp(63,40): warning C4244: 'argument': conversion from 'T' to 'uint16_t', possible loss of data
+D:\Programing\Engine\Opengl\main.cpp(82,38): warning C4244: 'argument': conversion from 'T' to 'uint16_t', possible loss of data
           with
           [
               T=float
           ]
-C:\Users\Bhushan\Desktop\GameEngine\Opengl\main.cpp(65,23): warning C4244: '=': conversion from 'T' to 'uint16_t', possible loss of data
+D:\Programing\Engine\Opengl\main.cpp(84,55): warning C4244: 'argument': conversion from 'T' to 'uint16_t', possible loss of data
           with
           [
               T=float
           ]
-C:\Users\Bhushan\Desktop\GameEngine\Opengl\main.cpp(66,23): warning C4244: '=': conversion from 'T' to 'uint16_t', possible loss of data
+D:\Programing\Engine\Opengl\main.cpp(84,41): warning C4244: 'argument': conversion from 'T' to 'uint16_t', possible loss of data
           with
           [
               T=float
           ]
-  Opengl.vcxproj -> C:\Users\Bhushan\Desktop\GameEngine\x64\Debug\2D-Engine.exe
+D:\Programing\Engine\Opengl\main.cpp(86,54): warning C4244: 'argument': conversion from 'T' to 'uint16_t', possible loss of data
+          with
+          [
+              T=float
+          ]
+D:\Programing\Engine\Opengl\main.cpp(86,40): warning C4244: 'argument': conversion from 'T' to 'uint16_t', possible loss of data
+          with
+          [
+              T=float
+          ]
+  Opengl.vcxproj -> D:\Programing\Engine\x64\Debug\2D-Engine.exe

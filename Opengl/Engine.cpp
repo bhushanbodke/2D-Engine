@@ -31,6 +31,7 @@ static bool glCheckError(const char* functionName, const char* file, int line)
 }
 
 //Glboal var
+const int Quad_no = 1000;
 
 Shader Engine::Default_Shader;
 
@@ -66,7 +67,54 @@ bool Engine::CreateWindow(short width, short height, std::string title,  bool Ca
 
 bool Engine::Init()
 {
-    // ---------------------------------- Quad and Textures---------------------- 
+    // ---------------------------------- Partial Textures---------------------- 
+    
+    GLfloat Tvertices[] = {
+        // Positions        // textcoordes 
+    0.0f , 0.0f ,0.0f , 
+    0.0f , 100.0f ,0.0f ,
+    100.0f , 100.0f ,0.0f,
+    100.0f , 0.0f ,0.0f ,
+    };
+    GLfloat Textcoord[] =
+    {
+        0.0f , 1.0f,
+        0.0f , 0.0f,
+        1.0f , 0.0f,
+        1.0f , 1.0f,
+    };
+    uint32_t Tindices[] =
+    {
+        0,1,2,
+        2,3,0,
+    };
+    GLCALL(glGenVertexArrays(1, &vao1));
+    GLCALL(glGenBuffers(1, &vbo1));
+    GLCALL(glGenBuffers(1, &vbo2));
+    GLCALL(glGenBuffers(1, &ebo1));
+
+    GLCALL(glBindVertexArray(vao1));
+    GLCALL(glBindBuffer(GL_ARRAY_BUFFER, vbo1));
+    GLCALL(glBufferData(GL_ARRAY_BUFFER, sizeof(Tvertices), Tvertices, GL_STATIC_DRAW));
+
+    GLCALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GL_FLOAT), (void*)0));
+    GLCALL(glEnableVertexAttribArray(0));
+
+    GLCALL(glBindBuffer(GL_ARRAY_BUFFER, vbo2));
+    GLCALL(glBufferData(GL_ARRAY_BUFFER, sizeof(Textcoord), Textcoord, GL_STATIC_DRAW));
+
+    GLCALL(glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GL_FLOAT), (void*)0));
+    GLCALL(glEnableVertexAttribArray(1));
+
+    GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo1));
+    GLCALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Tindices), Tindices, GL_STATIC_DRAW));
+    
+
+    GLCALL(glBindVertexArray(0));
+    GLCALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
+    GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+    //--------------------------------Partial Texture End ---------------------------
+    //  // ---------------------------------- Quad and Textures---------------------- 
     GLfloat vertices[] = {
         // Positions        // textcoordes 
     0.0f , 0.0f ,0.0f , 0.0f , 1.0f,
@@ -89,7 +137,7 @@ bool Engine::Init()
 
     GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo));
     GLCALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW));
-    
+
     GLCALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GL_FLOAT), (void*)0));
     GLCALL(glEnableVertexAttribArray(0));
     GLCALL(glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GL_FLOAT), (void*)(3 * sizeof(GL_FLOAT))));
@@ -236,7 +284,7 @@ void Engine::TextInit()
     FT_Done_FreeType(ft);
 }
 
-void Engine::RenderText(std::string text, float x, float y, float scale, glm::vec4 Color)
+void Engine::DrawText(std::string text, float x, float y, float scale, glm::vec4& Color)
 {
     glm::mat4 view = glm::ortho(0.0f, (float)Src_width, 0.0f, (float)Src_height, -1.0f, 100.0f);
 
@@ -296,6 +344,7 @@ void Engine::ClearScreen()
 
 void Engine::BackGroundColor(glm::vec4 Col)
 {
+    ClearScreen();
     GLCALL(glClearColor(Col.r, Col.g, Col.b, Col.a));
 }
 
@@ -328,6 +377,11 @@ Engine::~Engine()
     glDeleteVertexArrays(1, &vao);
     glDeleteBuffers(1, &vbo);
     glDeleteBuffers(1, &ebo);
+
+    glDeleteVertexArrays(1, &vao1);
+    glDeleteBuffers(1, &vbo1);
+    glDeleteBuffers(1, &vbo2);
+    glDeleteBuffers(1, &ebo1);
 
     glDeleteVertexArrays(1, &cvao);
     glDeleteBuffers(1, &cvbo);
@@ -381,14 +435,12 @@ void Engine::Run()
         if (time >= 1.0f)
         {
             fps = (int)(frames / time);
-            std::string t = Title+ "   -FPS : " + std::to_string((int)(frames / time));
+            std::string t = Title+ "   - FPS : " + std::to_string((int)(frames / time));
             glfwSetWindowTitle(window,t.c_str());
             frames = 0.0f;
             time = 0.0f;
         }
         frames++;
-
-        ClearScreen();
 
         if (!OnUserCreate())
             glfwSetWindowShouldClose(window, true);
@@ -438,7 +490,61 @@ void Engine::DrawSprite(Sprite& sprite, uint16_t x, uint16_t y, uint16_t width, 
     sprite.unbind();
 }
 
-void Engine::DrawRect(uint16_t x, uint16_t y, uint16_t width, uint16_t height,glm::vec4 Color, float angle)
+void Engine::DrawSpriteA(Sprite& sprite, uint16_t x, uint16_t y,
+    uint16_t width, uint16_t height,
+    uint16_t TextIndex,uint16_t rows, uint16_t colomn,
+    glm::vec4 tint, float angle)
+{
+
+    float xwidth = 1 / (float)rows;
+    float ywidth = 1 / (float)colomn;
+
+    int x1, y1;
+    x1 = TextIndex / rows;
+    y1 = TextIndex % colomn;
+
+    float u, v;
+    u = x1 * xwidth;
+    v = y1 * ywidth;
+
+    GLfloat Textcoord[] = {
+     // textcoordes 
+     u , v+ywidth,
+     u , v,
+     u + xwidth,v,
+     u+xwidth,v+ywidth,
+    };
+    glm::mat4 view = glm::ortho(0.0f, (float)Src_width, (float)Src_height, 0.0f, -1.0f, 100.0f);
+
+    float sizeX = (float)width / 100;
+    float sizeY = (float)height / 100;
+
+    glm::mat4 model = glm::scale(glm::mat4(1.0f), glm::vec3(sizeX, sizeY, 1.0f));
+    glm::vec2 Center(50.0f, 50.0f);
+
+    model = glm::translate(model, glm::vec3(x, y, 0.0f));
+    model = glm::translate(model, glm::vec3(Center.x, Center.y, 0.0f));
+    model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::translate(model, glm::vec3(-Center.x, -Center.y, 0.0f));
+
+    Default_Shader.SetUniformMat4("view", view);
+    Default_Shader.SetUniformMat4("model", model);
+
+    sprite.bind();
+    Default_Shader.SetUniform1i("m_Texture", sprite.slot);
+    Default_Shader.SetUniform1i("text", mode::texture);
+    Default_Shader.SetUniform4f("Color", tint.r, tint.g, tint.b, tint.a);
+
+    GLCALL(glBindBuffer(GL_ARRAY_BUFFER,vbo2));
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Textcoord), Textcoord);
+    
+    GLCALL(glBindVertexArray(vao1));
+    GLCALL(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0));
+    GLCALL(glBindVertexArray(0));
+    sprite.unbind(); 
+}
+
+void Engine::DrawRect(uint16_t x, uint16_t y, uint16_t width, uint16_t height,glm::vec4& Color, float angle)
 {
     glm::mat4 view = glm::ortho(0.0f, (float)Src_width, (float)Src_height,0.0f, -1.0f, 100.0f);
 
@@ -464,7 +570,7 @@ void Engine::DrawRect(uint16_t x, uint16_t y, uint16_t width, uint16_t height,gl
     GLCALL(glBindVertexArray(0));
 
 }
-void Engine::DrawCircle(uint16_t x, uint16_t y, float radius, glm::vec4 Color)
+void Engine::DrawCircle(uint16_t x, uint16_t y, float radius, glm::vec4& Color)
 {
     
     glm::mat4 view = glm::ortho(0.0f, (float)Src_width, (float)Src_height, 0.0f, -1.0f, 100.0f);
@@ -548,7 +654,7 @@ void Engine::DrawLine(uint16_t x, uint16_t y ,float length, glm::vec4 Color, flo
     GLCALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
 
 }
-void Engine::DrawLine(uint16_t x, uint16_t y, uint16_t x1, uint16_t y1, glm::vec4 Color)
+void Engine::DrawLine(uint16_t x, uint16_t y, uint16_t x1, uint16_t y1, glm::vec4& Color)
 {
     GLfloat vertices[] = {
      x ,  y  , 0.0f,

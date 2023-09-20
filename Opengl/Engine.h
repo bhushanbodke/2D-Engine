@@ -70,6 +70,7 @@ public:
 	short Src_width;
 	short Src_height;
 	uint32_t vbo, vao, ebo;
+	uint32_t vbo1 , vbo2, vao1, ebo1;
 	uint32_t cvbo, cebo, cvao;
 	uint32_t pvao, pvbo;
 	uint32_t tvao, tvbo;
@@ -83,6 +84,8 @@ public:
 	float * Points;
 	int dataSend = 0;
 	int dataSet = 0;
+
+	Sprite s;
 
 	std::map<char, Character> Characters;
 
@@ -111,12 +114,17 @@ public:
 
 	//Draw Functions
 	void DrawSprite(Sprite& sprite, uint16_t x, uint16_t y, uint16_t width, uint16_t height, glm::vec4 tint = glm::vec4(1.0f), float angle = 0);
-	void DrawRect(uint16_t x, uint16_t y, uint16_t width , uint16_t height, glm::vec4 Color = glm::vec4(1.0f), float angle = 0);
+	void DrawSpriteA(Sprite& sprite, uint16_t x, uint16_t y,
+		uint16_t width, uint16_t height,
+		uint16_t TextIndex, uint16_t rows, uint16_t colomn,
+		glm::vec4 tint = glm::vec4(1.0f), float angle = 0);
+	void DrawRect(uint16_t x, uint16_t y, uint16_t width , uint16_t height, glm::vec4& Color, float angle = 0);
 	void DrawPixel(int x, int y, glm::vec4 Color = glm::vec4(1.0f));
 	void RenderPixels();
 	void DrawLine(uint16_t x, uint16_t y, float length, glm::vec4 Color = glm::vec4(1.0f), float angle = 0 );
-	void DrawLine(uint16_t x, uint16_t y, uint16_t x1, uint16_t y1, glm::vec4 Color);
-	void DrawCircle(uint16_t x, uint16_t y, float radius, glm::vec4 Color = glm::vec4(1.0f));
-	void RenderText(std::string text, float x, float y, float scale, glm::vec4 Color);
+	void DrawLine(uint16_t x, uint16_t y, uint16_t x1, uint16_t y1, glm::vec4& Color);
+	void DrawCircle(uint16_t x, uint16_t y, float radius, glm::vec4& Color);
+	void DrawSprite(Sprite& sprite, uint16_t x, uint16_t y, uint16_t width, uint16_t height, glm::vec4 tint, uint16_t TextIndex, float angle, uint16_t total, uint16_t colomn);
+	void DrawText(std::string text, float x, float y, float scale, glm::vec4& Color);
 };
 

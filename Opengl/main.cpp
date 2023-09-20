@@ -19,13 +19,15 @@
 
 class Game :public Engine
 {
-public:
+    Sprite left;
+    Sprite up;
+    Sprite right;
+    Sprite down;
     Sprite tree;
-    std::vector<glm::vec2> Points;
-    int index = 0;
-  
+    int is_up = 0;
+    glm::vec2 player_pos = { 100,515 };
+public:
     Game() {
-        
     };
     bool OnUserCreate() override
     {
@@ -33,39 +35,55 @@ public:
     }
     void CreateAssets() override
     {
-        tree = Sprite("tree.png");
-        Points.resize(1000);
+        left = Sprite("sprites/character/left.png");
+        up = Sprite("sprites/character/up.png");
+        right = Sprite("sprites/character/right.png");
+        down = Sprite("sprites/character/down.png");
+        tree = Sprite("sprites/tree.png");
     }
     void InputHandling(float dt) override
     {
-        if (Mouse::button(GLFW_MOUSE_BUTTON_1))
+        if (KeyBoard::key(GLFW_KEY_W))
         {
-            int x = Mouse::GetMouseX();
-            int y = Mouse::GetMouseY();
-            if (Mouse::GetDX != 0 && Mouse::GetDY() != 0)
-            {
-                Points[index] = glm::vec2(x, y);
-                index++;
-            }
+            is_up = 1;
+            player_pos.y--;
+        }
+        if (KeyBoard::key(GLFW_KEY_A))
+        {
+            is_up = 0;
+            player_pos.x--;
+        }
+        if (KeyBoard::key(GLFW_KEY_D))
+        {
+            is_up = 2;
+            player_pos.x++;
+        }
+        if (KeyBoard::key(GLFW_KEY_S))
+        {
+            is_up = 3;
+            player_pos.y++;
+
         }
     }
     bool Render(int fps) override
     {
-        BackGroundColor(Color::Navy_Blue);
-        std::cout<<Points.size()<<std::endl;
-        uint16_t x1 = 0;
-        uint16_t y1 = 0;
-        for (auto& point : Points)
-        { 
-            if (x1 == 0)
-                DrawPixel(point.x, point.y, Color::White);
-            else
-                DrawLine( x1, y1, point.x, point.y, Color::White);
-
-            x1 = point.x;
-            y1 = point.y;
-        }
-        //DrawLine(100, 100, 200, 200, Color::Yellow);
+        BackGroundColor({0.5f,0.5f,0.0f,1.0f});
+        DrawSprite(tree, 300, 400, 100, 120);
+        DrawSprite(tree, 400, 400, 100, 120);
+        DrawSprite(tree, 350, 400, 100, 120);
+        DrawSprite(tree, 500, 400, 100, 120);
+        DrawSprite(tree, 200, 400, 100, 120);
+        DrawSprite(tree, 100, 400, 100, 120);
+        DrawSprite(tree, 250, 400, 100, 120);
+        DrawSprite(tree, 550, 400, 100, 120);
+        if(is_up == 0 )
+            DrawSprite(left, player_pos.x, player_pos.y, 100, 100);
+        else if (is_up == 1 )
+            DrawSprite(up, player_pos.x, player_pos.y, 100, 100);
+        else if (is_up == 2)
+            DrawSprite(right, player_pos.x, player_pos.y, 100, 100);
+        else if (is_up == 3)
+            DrawSprite(down, player_pos.x, player_pos.y, 100, 100);
         return true;
     }
 
